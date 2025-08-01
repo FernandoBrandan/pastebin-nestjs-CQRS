@@ -1,0 +1,39 @@
+## npm install -g artillery@2.0.23 artillery-plugin-faker@5.0.2
+
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Cargar usuarios constantes"
+  plugins:
+    faker: {}
+
+scenarios:
+  - name: Crear y leer paste
+    flow:
+      - function: "generatePasteData"
+      - post:
+          url: "/api/v1/pastes"
+          json:
+            title: "{{ paste.title }}"
+            content: "{{ paste.content }}"
+            contentType: "text/plain"
+            expiresIn: "1d"
+            visibility: "public"
+          capture:
+            json: "$.pasteId"
+            as: "pasteId"
+      - get:
+          url: "/api/v1/pastes/{{ pasteId }}"
+
+# Generador de datos usando faker
+functions:
+  generatePasteData: |
+    function (userContext, events, done) {
+      const faker = require('faker');
+      const title = faker.lorem.sentence();
+      const content = faker.lorem.paragraphs(2);
+      userContext.vars.paste = { title, content };
+      return done();
+    }
