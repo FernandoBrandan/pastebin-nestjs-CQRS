@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paste Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-create {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-get {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .result pre {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #ffafbd 0%, #ffc3a0 100%);
+            border-left-color: #ff4757;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-left-color: #2ed573;
+        }
+
+        .get-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px dashed #ddd;
+        }
+
+        .url-display {
+            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🗂️ Paste Manager</h1>
+
+        <form id="createForm">
+            <div class="form-group">
+                <label for="title">Título</label>
+                <input type="text" id="title" placeholder="Mi primer paste" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Contenido</label>
+                <textarea id="content" placeholder='console.log("Hola mundo");' required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="contentType">Tipo de Contenido</label>
+                <select id="contentType">
+                    <option value="text/javascript">JavaScript</option>
+                    <option value="text/html">HTML</option>
+                    <option value="text/css">CSS</option>
+                    <option value="text/python">Python</option>
+                    <option value="text/plain">Texto Plano</option>
+                    <option value="application/json">JSON</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="expiresIn">Expira en</label>
+                <select id="expiresIn">
+                    <option value="1h">1 hora</option>
+                    <option value="1d" selected>1 día</option>
+                    <option value="7d">7 días</option>
+                    <option value="30d">30 días</option>
+                    <option value="never">Nunca</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="visibility">Visibilidad</label>
+                <select id="visibility">
+                    <option value="public">Público</option>
+                    <option value="private">Privado</option>
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn-create">✨ Crear Paste</button>
+            </div>
+        </form>
+
+        <div class="get-section">
+            <div class="form-group">
+                <label for="pasteId">ID del Paste</label>
+                <input type="text" id="pasteId" placeholder="06GhGRs">
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-get" onclick="getPaste()">🔍 Obtener Paste</button>
+            </div>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api/v1/pastes'
+
+        document.getElementById('createForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+
+            const data = {
+                title: document.getElementById('title').value,
+                content: document.getElementById('content').value,
+                contentType: document.getElementById('contentType').value,
+                expiresIn: document.getElementById('expiresIn').value,
+                visibility: document.getElementById('visibility').value
+            }
+
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+
+                const result = await response.json()
+
+                if (response.ok) {
+                    showResult('success', '🎉 Paste creado exitosamente', result)
+                    document.getElementById('pasteId').value = result.pasteId
+                } else {
+                    showResult('error', '❌ Error al crear paste', result)
+                }
+            } catch (error) {
+                showResult('error', '❌ Error de conexión', { error: error.message })
+            }
+        })
+
+        async function getPaste() {
+            const pasteId = document.getElementById('pasteId').value
+            if (!pasteId) {
+                showResult('error', '❌ Error', { error: 'Ingresa un ID de paste' })
+                return
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/${pasteId}`)
+                const result = await response.json()
+
+                if (response.ok) {
+                    showResult('success', '📄 Paste obtenido', result)
+                } else {
+                    showResult('error', '❌ Error al obtener paste', result)
+                }
+            } catch (error) {
+                showResult('error', '❌ Error de conexión', { error: error.message })
+            }
+        }
+
+        function showResult(type, title, data) {
+            const resultDiv = document.getElementById('result')
+            resultDiv.innerHTML = `
+                <div class="result ${type}">
+                    <h3>${title}</h3>
+                    ${data.url ? `<div class="url-display">URL: ${data.url}</div>` : ''}
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `
+        }
+    </script>
+</body>
+
+</html>
